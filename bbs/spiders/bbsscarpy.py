@@ -2,23 +2,27 @@
 
 import	scrapy
 from scrapy.http import Request
+from scrapy.contrib.spiders import CrawlSpider, Rule
+from scrapy.contrib.linkextractors import LinkExtractor
 from bbs.items import BBSItem
 import re
 
-class BBSSpider(scrapy.Spider):
+class BBSSpider(CrawlSpider):
 	name = 'bbs'
 	allowed_domains	=	["bbs.ustc.edu.cn"]
 	start_urls = ['http://bbs.ustc.edu.cn/cgi/bbsindex']
+	rules = [
+		Rule(LinkExtractor(allow=('bbscon\?bn=.+&fn=.+' )), callback='parse_item', follow=False),
+		Rule(LinkExtractor(allow=('bbsdoc\?board=[^&]+', 'bbsdoc\?board=[^&]+&start=\d+'))),
+		Rule(LinkExtractor(deny=('.+')))
+	]
 	
-	def	parse(self,	res):
+	def	parse_start_url(self, res):
 		try:
-			urls = res.xpath('//a/@href').extract()
+			urls = LinkExtractor(allow=('bbsdoc\?board=[^&]+', 'bbsdoc\?board=[^&]+&start=\d+')).extract_links(response)
 			for url in urls:
-				if re.match('bbstcon\?board=.+&file=.+', url):
-					yield Request('http://bbs.ustc.edu.cn/cgi/'+url, callback=self.parse_item)
-					
-				else: 
-					yield Request('http://bbs.ustc.edu.cn/cgi/'+url, callback=self.parse)
+				print url.text
+				yield Request(url.url, callback='parse')
 		except:
 			pass
 	

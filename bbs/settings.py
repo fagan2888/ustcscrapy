@@ -15,3 +15,4 @@ NEWSPIDER_MODULE = 'bbs.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'bbs (+http://www.yourdomain.com)'
+ITEM_PIPELINES = ['bbs.pipelines.BBSPipeline']
